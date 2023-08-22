@@ -3,6 +3,7 @@ package controllers
 import (
 	"backend/models"
 	"backend/services"
+	"backend/utils/token"
 	"fmt"
 	"net/http"
 
@@ -39,9 +40,16 @@ func AllUsers(c *gin.Context) {
 }
 
 func GetOneUser(c *gin.Context) {
-	id := c.Param("id")
-	fmt.Println("id", id)
+	//id := c.Param("id")
+	//fmt.Println("id", id)
 	//id, _ := strconv.ParseInt(query, 10, 32)
+	id, err := token.ExtractID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	user := models.User{}
 	if err := services.DB.Where("id = ?", id).Preload("Author").Preload("Owns").First(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
