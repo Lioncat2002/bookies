@@ -23,15 +23,11 @@ func ConnectDatabase() {
 		log.Fatal("failed to connect database", err)
 	} else {
 		log.Println("connected to database")
-	}
-	//DB.Statement.Delete(&models.User{}, &models.Post{})
-	//DB.Exec("DELETE FROM items")
-	//DB.Exec("DELETE FROM users")
-	//DB.Delete(&[]models.User{}, &[]models.Post{}).Where("1=1")
-	DB.Migrator().DropTable(&models.User{})
-	DB.Migrator().DropTable(&models.Book{})
-	DB.Exec("DROP TABLE user_books")
-	DB.Exec("DROP TABLE user_books_cart")
-	DB.AutoMigrate(&models.User{})
+	} /*
+		DB.Migrator().DropTable(&models.User{})
+		DB.Migrator().DropTable(&models.Book{})
+		DB.Exec("DROP TABLE user_owns")
+		DB.Exec("DROP TABLE user_cart") */
+	DB.AutoMigrate(&models.User{}, &models.UserCart{}, &models.UserOwns{})
 	DB.AutoMigrate(&models.Book{})
 }

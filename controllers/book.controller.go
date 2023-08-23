@@ -19,7 +19,7 @@ type Bookdata struct {
 
 type BuyBookData struct {
 	/* UserToken uint `json:"user_token" binding:"required"` */
-	BookID uint `json:"item_id" binding:"required"`
+	BookID string `json:"item_id" binding:"required"`
 }
 
 func BuyBook(c *gin.Context) {
@@ -68,6 +68,46 @@ func BuyBook(c *gin.Context) {
 		"status": "success",
 		"data":   item,
 	})
+}
+
+func AddToCart(c *gin.Context) {
+	buyBookData := BuyBookData{}
+	if err := c.ShouldBindJSON(&buyBookData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	id, err := token.ExtractID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+	user := models.User{}
+	if err := services.DB.Where("id = ?", id).Find(&user).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	item := models.Book{}
+	if err := services.DB.Where("id = ?", buyBookData.BookID).Find(&item).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	/* books := []models.Book{
+		item,
+	} */
+	if err := services.DB.Where("id = ?", id).Find(&user).Association("Carts").Append(&item); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 }
 
 func CreateBook(c *gin.Context) {

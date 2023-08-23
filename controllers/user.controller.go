@@ -33,7 +33,7 @@ type AddCoin struct {
 
 func AllUsers(c *gin.Context) {
 	var users []models.User
-	if err := services.DB.Preload("Author").Preload("Owns").Find(&users).Error; err != nil {
+	if err := services.DB.Preload("Author").Preload("Owns").Preload("Carts").Find(&users).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -56,7 +56,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 	user := models.User{}
-	if err := services.DB.Where("email = ?", data.Email).Preload("Author").Preload("Owns").Preload("Cart").First(&user).Error; err != nil {
+	if err := services.DB.Where("email = ?", data.Email).Preload("Author").Preload("Owns").Preload("Carts").First(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -123,7 +123,8 @@ func AddUser(c *gin.Context) {
 	user := models.User{}
 	user.Email = data.Email
 	user.Password = pass
-	//user.Owned = []models.Item{}
+	user.Carts = []models.Book{}
+	user.Owns = []models.Book{}
 
 	if err := services.DB.Save(&user).Error; err != nil {
 		c.JSON(http.StatusConflict, gin.H{

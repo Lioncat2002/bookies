@@ -35,7 +35,7 @@ func RunRouter() {
 	ItemRoute.GET("/:id", controllers.GetOneBook)
 	ItemRoute.POST("/", controllers.CreateBook)
 	ItemRoute.POST("/buy", controllers.BuyBook)
-
+	ItemRoute.POST("/addcart", controllers.AddToCart)
 	router.Run(":8080")
 }
 func main() {

@@ -9,8 +9,20 @@ type User struct {
 	Password string `gorm:"size:255;"`
 	Name     string `gorm:"size:255;"`
 	Author   []Book //things that the user has posted to sell on the platform
-	Owns     []Book `gorm:"many2many:user_books;"`
-	Cart     []Book `gorm:"many2many:user_books_cart;"`
+	Carts    []Book `gorm:"many2many:user_carts;joinForeignKey:UserID;joinReferences:BookID"`
+	Owns     []Book `gorm:"many2many:user_owns;joinForeignKey:UserID;joinReferences:BookID"`
 	Coins    float32
 	Role     string
+}
+
+// Define the User foreign key relationship for Owns
+type UserOwns struct {
+	UserID string `gorm:"not null;unique"`
+	BookID string `gorm:"not null;unique"`
+}
+
+// Define the User foreign key relationship for Cart
+type UserCart struct {
+	UserID string `gorm:"not null;unique"`
+	BookID string `gorm:"not null;unique"`
 }
