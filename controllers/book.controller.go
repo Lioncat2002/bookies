@@ -5,11 +5,12 @@ import (
 	"backend/services"
 	"net/http"
 
+	"backend/utils/token"
+
 	"github.com/gin-gonic/gin"
 )
 
 type Bookdata struct {
-	AuthorID    uint    `json:"author_id" binding:"required"`
 	Name        string  `json:"name" binding:"required"`
 	Description string  `json:"desc"`
 	Price       float32 `json:"price" binding:"required"`
@@ -17,12 +18,12 @@ type Bookdata struct {
 }
 
 type BuyBookData struct {
-	UserID uint `json:"user_id" binding:"required"`
+	/* UserToken uint `json:"user_token" binding:"required"` */
 	BookID uint `json:"item_id" binding:"required"`
 }
 
 func BuyBook(c *gin.Context) {
-	var buyBookData BuyBookData
+	buyBookData := BuyBookData{}
 	if err := c.ShouldBindJSON(&buyBookData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -30,8 +31,14 @@ func BuyBook(c *gin.Context) {
 		return
 	}
 
+	id, err := token.ExtractID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
 	user := models.User{}
-	if err := services.DB.Where("id = ?", buyBookData.UserID).Find(&user).Error; err != nil {
+	if err := services.DB.Where("id = ?", id).Find(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -51,13 +58,7 @@ func BuyBook(c *gin.Context) {
 		})
 		return
 	}
-	if err := services.DB.Where("id = ?", buyBookData.UserID).Find(&user).Update("coins", coins).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-	if err := services.DB.Where("id = ?", buyBookData.BookID).Find(&item).Update("current_owner_id", buyBookData.UserID).Error; err != nil {
+	if err := services.DB.Where("id = ?", id).Find(&user).Update("coins", coins).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -70,21 +71,27 @@ func BuyBook(c *gin.Context) {
 }
 
 func CreateBook(c *gin.Context) {
-	var itemData Bookdata
-	if err := c.ShouldBindJSON(&itemData); err != nil {
+	var bookData Bookdata
+	if err := c.ShouldBindJSON(&bookData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	item := models.Book{}
-	item.UserID = itemData.AuthorID
-	item.Name = itemData.Name
-	item.Description = itemData.Description
-	item.Tag = itemData.Tag
+	id, err := token.ExtractID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+	book := models.Book{}
+	book.UserID = id
+	book.Name = bookData.Name
+	book.Description = bookData.Description
+	book.Tag = bookData.Tag
 	//item.CurrentOwnerID = itemData.AuthorID
-	item.Price = itemData.Price
-	if err := services.DB.Create(&item).Error; err != nil {
+	book.Price = bookData.Price
+	if err := services.DB.Create(&book).Error; err != nil {
 		c.JSON(http.StatusConflict, gin.H{
 			"error": err.Error(),
 		})
@@ -93,7 +100,7 @@ func CreateBook(c *gin.Context) {
 	//services.DB.Debug().Model(&models.User{}).Related()
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
-		"data":   item,
+		"data":   book,
 	})
 }
 

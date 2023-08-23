@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend/controllers"
+	"backend/middlewares"
 	"backend/services"
 
 	"github.com/gin-gonic/gin"
@@ -20,14 +21,17 @@ func RunRouter() {
 
 	UserRoute := router.Group("/api/user")
 	UserRoute.GET("/", controllers.AllUsers)
-	UserRoute.GET("/:id", controllers.GetOneUser)
 	UserRoute.POST("/", controllers.AddUser)
+	UserRoute.POST("/login", controllers.LoginUser)
+	UserRoute.GET("/one", controllers.GetOneUser)
+	UserRoute.Use(middlewares.JwtAuth())
 	UserRoute.POST("/update", controllers.UpdateUser)
 	UserRoute.POST("/buycoins", controllers.UpdateCoins)
-	//TODO: make route protected
+
 	ItemRoute := router.Group("/api/book")
 
 	ItemRoute.GET("/", controllers.AllBooks)
+	ItemRoute.Use(middlewares.JwtAuth())
 	ItemRoute.GET("/:id", controllers.GetOneBook)
 	ItemRoute.POST("/", controllers.CreateBook)
 	ItemRoute.POST("/buy", controllers.BuyBook)
