@@ -12,7 +12,7 @@ import (
 )
 
 // GenerateToken generates a jwt token and assign a email to it's claims and return it
-func GenerateToken(user_id uint) (string, error) {
+func GenerateToken(user_id string) (string, error) {
 
 	token_lifespan, err := strconv.Atoi(os.Getenv("TOKEN_LIFESPAN")) //how long token is valid
 
@@ -22,7 +22,7 @@ func GenerateToken(user_id uint) (string, error) {
 
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
-	claims["id"] = strconv.Itoa(int(user_id))
+	claims["id"] = user_id
 	fmt.Println(user_id)
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(token_lifespan)).Unix() //setting a expiry time
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -60,7 +60,7 @@ func ExtractToken(c *gin.Context) string {
 }
 
 // get the id from the token
-func ExtractID(c *gin.Context) (uint, error) {
+func ExtractID(c *gin.Context) (string, error) {
 
 	tokenString := ExtractToken(c)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -71,14 +71,14 @@ func ExtractID(c *gin.Context) (uint, error) {
 		return []byte(os.Getenv("API_KEY")), nil //API_KEY has the secret string used for signing up the user
 	})
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
 		fmt.Println(claims["id"])
-		id, _ := strconv.ParseUint(claims["id"].(string), 10, 64) //get the id
+		id, _ := claims["id"].(string) //get the id
 
-		return uint(id), nil
+		return id, nil
 	}
-	return 0, nil
+	return "", nil
 }

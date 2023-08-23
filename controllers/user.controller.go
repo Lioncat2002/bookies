@@ -125,7 +125,7 @@ func AddUser(c *gin.Context) {
 	user.Password = pass
 	//user.Owned = []models.Item{}
 
-	if err := services.DB.Create(&user).Error; err != nil {
+	if err := services.DB.Save(&user).Error; err != nil {
 		c.JSON(http.StatusConflict, gin.H{
 			"error": err.Error(),
 		})

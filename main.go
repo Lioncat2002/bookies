@@ -31,7 +31,7 @@ func RunRouter() {
 	ItemRoute := router.Group("/api/book")
 
 	ItemRoute.GET("/", controllers.AllBooks)
-	ItemRoute.Use(middlewares.JwtAuth())
+	//ItemRoute.Use(middlewares.JwtAuth())
 	ItemRoute.GET("/:id", controllers.GetOneBook)
 	ItemRoute.POST("/", controllers.CreateBook)
 	ItemRoute.POST("/buy", controllers.BuyBook)
