@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	ID       string `gorm:"type:string;default:uuid_generate_v4()"`
+	ID       string `gorm:"primaryKey;type:string;default:uuid_generate_v4()"`
 	Email    string `gorm:"size:255;not null;unique"`
 	Password string `gorm:"size:255;"`
 	Name     string `gorm:"size:255;"`
@@ -17,12 +17,12 @@ type User struct {
 
 // Define the User foreign key relationship for Owns
 type UserOwns struct {
-	UserID string `gorm:"not null;"`
-	BookID string `gorm:"not null;"`
+	UserID string `gorm:"primaryKey;autoIncrement:false"`
+	BookID string `gorm:"primaryKey;autoIncrement:false"`
 }
 
 // Define the User foreign key relationship for Cart
 type UserCart struct {
-	UserID string `gorm:"not null;"`
-	BookID string `gorm:"not null;"`
+	UserID string `gorm:"primaryKey;autoIncrement:false"`
+	BookID string `gorm:"primaryKey;autoIncrement:false"`
 }

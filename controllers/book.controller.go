@@ -30,6 +30,7 @@ func BuyBook(c *gin.Context) {
 		})
 		return
 	}
+
 	user := models.User{}
 	if err := services.DB.Preload("Carts").Preload("Owns").Where("id = ?", id).Find(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -37,10 +38,12 @@ func BuyBook(c *gin.Context) {
 		})
 		return
 	}
+
 	var totalPrice float32 = 0.0
 	for _, book := range user.Carts {
 		totalPrice += book.Price
 	}
+
 	coins := user.Coins - totalPrice
 	if coins < 0 {
 		c.JSON(http.StatusForbidden, gin.H{
@@ -48,25 +51,34 @@ func BuyBook(c *gin.Context) {
 		})
 		return
 	}
-	books := user.Carts
-	if err := services.DB.Where("id = ?", id).Find(&user).Association("Owns").Append(&books); err != nil {
+
+	// Deduct coins from user's balance
+	if err := services.DB.Model(&user).Where("id = ?", id).Update("coins", coins).Error; err != nil {
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	if err := services.DB.Model(&user).Association("Carts").Delete(&books); err != nil {
+
+	// Move books from cart to user's owned books
+	if err := services.DB.Model(&user).Where("id = ?", id).Association("Owns").Append(&user.Carts); err != nil {
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	if err := services.DB.Where("id = ?", id).Find(&user).Update("coins", coins).Error; err != nil {
+
+	// Clear user's cart
+	if err := services.DB.Model(&user).Association("Carts").Clear(); err != nil {
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
+
 	c.JSON(http.StatusAccepted, gin.H{
 		"status": "success",
 	})
