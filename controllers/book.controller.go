@@ -19,42 +19,45 @@ type Bookdata struct {
 
 type BuyBookData struct {
 	/* UserToken uint `json:"user_token" binding:"required"` */
-	BookID string `json:"item_id" binding:"required"`
+	BookID string `json:"book_id" binding:"required"`
 }
 
 func BuyBook(c *gin.Context) {
-	buyBookData := BuyBookData{}
-	if err := c.ShouldBindJSON(&buyBookData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
 	id, err := token.ExtractID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 	user := models.User{}
-	if err := services.DB.Where("id = ?", id).Find(&user).Error; err != nil {
+	if err := services.DB.Preload("Carts").Preload("Owns").Where("id = ?", id).Find(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	item := models.Book{}
-	if err := services.DB.Where("id = ?", buyBookData.BookID).Find(&item).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
+	var totalPrice float32 = 0.0
+	for _, book := range user.Carts {
+		totalPrice += book.Price
 	}
-	coins := user.Coins - item.Price
+	coins := user.Coins - totalPrice
 	if coins < 0 {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "insufficient balance",
+		})
+		return
+	}
+	books := user.Carts
+	if err := services.DB.Where("id = ?", id).Find(&user).Association("Owns").Append(&books); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	if err := services.DB.Model(&user).Association("Carts").Delete(&books); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
@@ -66,7 +69,6 @@ func BuyBook(c *gin.Context) {
 	}
 	c.JSON(http.StatusAccepted, gin.H{
 		"status": "success",
-		"data":   item,
 	})
 }
 
@@ -92,22 +94,22 @@ func AddToCart(c *gin.Context) {
 		})
 		return
 	}
-	item := models.Book{}
-	if err := services.DB.Where("id = ?", buyBookData.BookID).Find(&item).Error; err != nil {
+	book := models.Book{}
+	if err := services.DB.Where("id = ?", buyBookData.BookID).Find(&book).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	/* books := []models.Book{
-		item,
-	} */
-	if err := services.DB.Where("id = ?", id).Find(&user).Association("Carts").Append(&item); err != nil {
+	if err := services.DB.Where("id = ?", id).Find(&user).Association("Carts").Append(&book); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
+	c.JSON(http.StatusAccepted, gin.H{
+		"status": "success",
+	})
 }
 
 func CreateBook(c *gin.Context) {
@@ -129,7 +131,6 @@ func CreateBook(c *gin.Context) {
 	book.Name = bookData.Name
 	book.Description = bookData.Description
 	book.Tag = bookData.Tag
-	//item.CurrentOwnerID = itemData.AuthorID
 	book.Price = bookData.Price
 	if err := services.DB.Create(&book).Error; err != nil {
 		c.JSON(http.StatusConflict, gin.H{
@@ -137,7 +138,6 @@ func CreateBook(c *gin.Context) {
 		})
 		return
 	}
-	//services.DB.Debug().Model(&models.User{}).Related()
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"data":   book,
@@ -146,8 +146,8 @@ func CreateBook(c *gin.Context) {
 
 func GetOneBook(c *gin.Context) {
 	id := c.Param("id")
-	item := models.Book{}
-	if err := services.DB.Where("id = ?", id).First(&item).Error; err != nil {
+	book := models.Book{}
+	if err := services.DB.Where("id = ?", id).First(&book).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -156,13 +156,13 @@ func GetOneBook(c *gin.Context) {
 
 	c.JSON(http.StatusAccepted, gin.H{
 		"status": "success",
-		"data":   item,
+		"data":   book,
 	})
 }
 
 func AllBooks(c *gin.Context) {
-	var items []models.Book
-	if err := services.DB.Find(&items).Error; err != nil {
+	var books []models.Book
+	if err := services.DB.Find(&books).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": err.Error(),
 		})
@@ -171,6 +171,6 @@ func AllBooks(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
-		"data":   items,
+		"data":   books,
 	})
 }

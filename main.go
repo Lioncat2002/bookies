@@ -24,6 +24,7 @@ func RunRouter() {
 	UserRoute.POST("/", controllers.AddUser)
 	UserRoute.POST("/login", controllers.LoginUser)
 	UserRoute.GET("/one", controllers.GetOneUser)
+
 	UserRoute.Use(middlewares.JwtAuth())
 	UserRoute.POST("/update", controllers.UpdateUser)
 	UserRoute.POST("/buycoins", controllers.UpdateCoins)
@@ -31,8 +32,9 @@ func RunRouter() {
 	ItemRoute := router.Group("/api/book")
 
 	ItemRoute.GET("/", controllers.AllBooks)
-	//ItemRoute.Use(middlewares.JwtAuth())
 	ItemRoute.GET("/:id", controllers.GetOneBook)
+
+	ItemRoute.Use(middlewares.JwtAuth())
 	ItemRoute.POST("/", controllers.CreateBook)
 	ItemRoute.POST("/buy", controllers.BuyBook)
 	ItemRoute.POST("/addcart", controllers.AddToCart)

@@ -23,11 +23,12 @@ func ConnectDatabase() {
 		log.Fatal("failed to connect database", err)
 	} else {
 		log.Println("connected to database")
-	} /*
-		DB.Migrator().DropTable(&models.User{})
-		DB.Migrator().DropTable(&models.Book{})
-		DB.Exec("DROP TABLE user_owns")
-		DB.Exec("DROP TABLE user_cart") */
+	}
+	//Migrations
+	DB.Migrator().DropTable(&models.User{})
+	DB.Migrator().DropTable(&models.Book{})
+	DB.Exec("DROP TABLE user_owns")
+	DB.Exec("DROP TABLE user_carts")
 	DB.AutoMigrate(&models.User{}, &models.UserCart{}, &models.UserOwns{})
 	DB.AutoMigrate(&models.Book{})
 }

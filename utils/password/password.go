@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// SHA256 password hashing
 func HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
@@ -15,6 +16,7 @@ func HashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
+// SHA256 password verification
 func VerifyPassword(hashedPassword string, candidatePassword string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(candidatePassword))
 }
