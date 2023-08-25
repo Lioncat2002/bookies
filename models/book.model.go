@@ -9,5 +9,7 @@ type Book struct {
 	Name        string `gorm:"size:255;"`
 	Description string `gorm:"size:255;"`
 	Tag         string
+	Url         string
 	Price       float32
+	Rating      float32
 }

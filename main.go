@@ -36,6 +36,7 @@ func RunRouter() {
 
 	ItemRoute.Use(middlewares.JwtAuth())
 	ItemRoute.POST("/", controllers.CreateBook)
+	ItemRoute.POST("/upload/:id", controllers.AddBookUrl)
 	ItemRoute.POST("/buy", controllers.BuyBook)
 	ItemRoute.POST("/addcart", controllers.AddToCart)
 	router.Run(":8080")

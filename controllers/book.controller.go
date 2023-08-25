@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"backend/go-catbox"
 	"backend/models"
 	"backend/services"
-	"net/http"
-
 	"backend/utils/token"
+	"bytes"
+	"io"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -121,6 +123,39 @@ func AddToCart(c *gin.Context) {
 	}
 	c.JSON(http.StatusAccepted, gin.H{
 		"status": "success",
+	})
+}
+
+func AddBookUrl(c *gin.Context) {
+	f, _ := c.FormFile("file")
+	file, _ := f.Open()
+	defer file.Close()
+	buf := bytes.NewBuffer(nil)
+	if _, err := io.Copy(buf, file); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	id := c.Param("id")
+	url, err := catbox.New(nil).Upload(buf.Bytes(), string(id))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	book := models.Book{}
+	if err := services.DB.Where("id = ?", id).Find(&book).Update("url", url).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusAccepted, gin.H{
+		"status": "success",
+		"data":   book,
 	})
 }
 
