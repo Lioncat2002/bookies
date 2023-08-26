@@ -104,6 +104,28 @@ func GetOneUser(c *gin.Context) {
 	})
 }
 
+func DeleteUser(c *gin.Context) {
+	id, err := token.ExtractID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	user := models.User{}
+	if err := services.DB.Where("id = ?", id).First(&user).Unscoped().Delete(&user).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusAccepted, gin.H{
+		"status": "success",
+		"data":   "deleted",
+	})
+}
+
 func AddUser(c *gin.Context) {
 	var data UserSignUpData
 

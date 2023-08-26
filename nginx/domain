@@ -1,0 +1,7 @@
+server {
+    server_name spobook www.spobook;
+
+    location / {
+        proxy_pass http://localhost:8080;
+    }
+}

@@ -24,6 +24,22 @@ type BuyBookData struct {
 	BookID string `json:"book_id" binding:"required"`
 }
 
+func SearchBook(c *gin.Context) {
+	name := c.Param("name")
+	book := models.Book{}
+	if err := services.DB.Where("name = ?", name).First(&book).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusAccepted, gin.H{
+		"status": "success",
+		"data":   book,
+	})
+}
+
 func BuyBook(c *gin.Context) {
 	id, err := token.ExtractID(c)
 	if err != nil {

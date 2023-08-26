@@ -1,7 +1,6 @@
 package services
 
 import (
-	"backend/models"
 	"log"
 	"os"
 
@@ -24,11 +23,4 @@ func ConnectDatabase() {
 	} else {
 		log.Println("connected to database")
 	}
-	//Migrations
-	/* DB.Migrator().DropTable(&models.User{})
-	DB.Migrator().DropTable(&models.Book{})
-	DB.Exec("DROP TABLE user_owns")
-	DB.Exec("DROP TABLE user_carts") */
-	DB.AutoMigrate(&models.User{}, &models.UserCart{}, &models.UserOwns{})
-	DB.AutoMigrate(&models.Book{})
 }

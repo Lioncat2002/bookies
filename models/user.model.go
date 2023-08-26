@@ -8,7 +8,7 @@ type User struct {
 	Email    string `gorm:"size:255;not null;unique"`
 	Password string `gorm:"size:255;"`
 	Name     string `gorm:"size:255;"`
-	Author   []Book //The books that user wrote
+	Author   []Book `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Carts    []Book `gorm:"many2many:user_carts;joinForeignKey:UserID;joinReferences:BookID"` //books in carts
 	Owns     []Book `gorm:"many2many:user_owns;joinForeignKey:UserID;joinReferences:BookID"`  //books in owns
 	Coins    float32

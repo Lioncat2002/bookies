@@ -21,22 +21,22 @@ func RunRouter() {
 
 	UserRoute := router.Group("/api/user")
 	UserRoute.GET("/", controllers.AllUsers)
-	UserRoute.POST("/", controllers.AddUser)
+	UserRoute.PUT("/", controllers.AddUser)
 	UserRoute.POST("/login", controllers.LoginUser)
-	UserRoute.GET("/one", controllers.GetOneUser)
 
 	UserRoute.Use(middlewares.JwtAuth())
-	UserRoute.POST("/update", controllers.UpdateUser)
-	UserRoute.POST("/buycoins", controllers.UpdateCoins)
+	UserRoute.GET("/one", controllers.GetOneUser)
+	UserRoute.PATCH("/update", controllers.UpdateUser)
+	UserRoute.DELETE("/delete", controllers.DeleteUser)
+	UserRoute.PATCH("/buycoins", controllers.UpdateCoins)
 
 	ItemRoute := router.Group("/api/book")
-
 	ItemRoute.GET("/", controllers.AllBooks)
 	ItemRoute.GET("/:id", controllers.GetOneBook)
-
+	ItemRoute.GET("/search/:name", controllers.SearchBook)
 	ItemRoute.Use(middlewares.JwtAuth())
-	ItemRoute.POST("/", controllers.CreateBook)
-	ItemRoute.POST("/upload/:id", controllers.AddBookUrl)
+	ItemRoute.PUT("/", controllers.CreateBook)
+	ItemRoute.PUT("/upload/:id", controllers.AddBookUrl)
 	ItemRoute.POST("/buy", controllers.BuyBook)
 	ItemRoute.POST("/addcart", controllers.AddToCart)
 	router.Run(":8080")
