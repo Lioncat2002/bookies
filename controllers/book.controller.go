@@ -154,6 +154,9 @@ func RateBook(c *gin.Context) {
 		})
 		return
 	}
+	c.JSON(http.StatusAccepted, gin.H{
+		"status": "success",
+	})
 }
 
 func AddToCart(c *gin.Context) {

@@ -34,11 +34,13 @@ func RunRouter() {
 	ItemRoute.GET("/", controllers.AllBooks)
 	ItemRoute.GET("/:id", controllers.GetOneBook)
 	ItemRoute.GET("/search/:name", controllers.SearchBook)
+
 	ItemRoute.Use(middlewares.JwtAuth())
 	ItemRoute.PUT("/", controllers.CreateBook)
 	ItemRoute.PUT("/upload/:id", controllers.AddBookUrl)
 	ItemRoute.POST("/buy", controllers.BuyBook)
 	ItemRoute.POST("/addcart", controllers.AddToCart)
+	ItemRoute.POST("/rate", controllers.RateBook)
 	router.Run(":8080")
 }
 func main() {

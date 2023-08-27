@@ -33,7 +33,7 @@ type AddCoin struct {
 
 func AllUsers(c *gin.Context) {
 	var users []models.User
-	if err := services.DB.Preload("Author").Preload("Owns").Preload("Carts").Find(&users).Error; err != nil {
+	if err := services.DB.Preload("Author").Preload("Owns").Preload("Carts").Preload("Rating").Find(&users).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
