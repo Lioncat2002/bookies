@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 type CreateBookdata struct {
@@ -26,6 +27,36 @@ type BookData struct {
 type RateBookData struct {
 	Rate   float32 `json:"rate" binding:"required"`
 	BookID string  `json:"book_id" binding:"required"`
+}
+
+func RecommendBook(c *gin.Context) {
+	id, err := token.ExtractID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	user := models.User{}
+	if err := services.DB.Preload("Owns").Where("id = ?", id).Find(&user).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	var tags []string
+	books := user.Owns
+	for _, book := range books {
+		tags = append(tags, book.Tag)
+	}
+	book := []models.Book{}
+	if err := services.DB.Where("tag = ANY(?)", pq.Array(tags)).First(&book).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 }
 
 func SearchBook(c *gin.Context) {
