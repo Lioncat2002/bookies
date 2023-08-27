@@ -12,15 +12,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Bookdata struct {
+type CreateBookdata struct {
 	Name        string  `json:"name" binding:"required"`
 	Description string  `json:"desc"`
 	Price       float32 `json:"price" binding:"required"`
 	Tag         string  `json:"tag" binding:"required"`
 }
 
-type BuyBookData struct {
-	/* UserToken uint `json:"user_token" binding:"required"` */
+type BookData struct {
 	BookID string `json:"book_id" binding:"required"`
 }
 
@@ -102,9 +101,9 @@ func BuyBook(c *gin.Context) {
 	})
 }
 
-func AddToCart(c *gin.Context) {
-	buyBookData := BuyBookData{}
-	if err := c.ShouldBindJSON(&buyBookData); err != nil {
+func RateBook(c *gin.Context) {
+	bookData := BookData{}
+	if err := c.ShouldBindJSON(&bookData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -116,6 +115,32 @@ func AddToCart(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
+	}
+	user := models.User{}
+	if err := services.DB.Where("id = ?", id).Find(&user).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+}
+
+func AddToCart(c *gin.Context) {
+	cartData := BookData{}
+	if err := c.ShouldBindJSON(&cartData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	id, err := token.ExtractID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
 	}
 	user := models.User{}
 	if err := services.DB.Where("id = ?", id).Find(&user).Error; err != nil {
@@ -125,7 +150,7 @@ func AddToCart(c *gin.Context) {
 		return
 	}
 	book := models.Book{}
-	if err := services.DB.Where("id = ?", buyBookData.BookID).Find(&book).Error; err != nil {
+	if err := services.DB.Where("id = ?", cartData.BookID).Find(&book).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -155,6 +180,19 @@ func AddBookUrl(c *gin.Context) {
 	}
 
 	id := c.Param("id")
+	user := models.User{}
+	if err := services.DB.Where("id = ?", id).Find(&user).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	if user.Role != "admin" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "incorrect role",
+		})
+		return
+	}
 	url, err := catbox.New(nil).Upload(buf.Bytes(), string(id))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -176,7 +214,7 @@ func AddBookUrl(c *gin.Context) {
 }
 
 func CreateBook(c *gin.Context) {
-	var bookData Bookdata
+	var bookData CreateBookdata
 	if err := c.ShouldBindJSON(&bookData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -188,6 +226,20 @@ func CreateBook(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
+	}
+	user := models.User{}
+	if err := services.DB.Where("id = ?", id).Find(&user).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	if user.Role != "admin" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "incorrect permissions",
+		})
+		return
 	}
 	book := models.Book{}
 	book.UserID = id
