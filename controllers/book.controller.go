@@ -23,6 +23,11 @@ type BookData struct {
 	BookID string `json:"book_id" binding:"required"`
 }
 
+type RateBookData struct {
+	Rate   float32 `json:"rate" binding:"required"`
+	BookID string  `json:"book_id" binding:"required"`
+}
+
 func SearchBook(c *gin.Context) {
 	name := c.Param("name")
 	book := models.Book{}
@@ -102,7 +107,7 @@ func BuyBook(c *gin.Context) {
 }
 
 func RateBook(c *gin.Context) {
-	bookData := BookData{}
+	bookData := RateBookData{}
 	if err := c.ShouldBindJSON(&bookData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -119,6 +124,31 @@ func RateBook(c *gin.Context) {
 	}
 	user := models.User{}
 	if err := services.DB.Where("id = ?", id).Find(&user).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	book := models.Book{}
+	if err := services.DB.Where("id = ?", bookData.BookID).Find(&book).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	var rating float32 = 0.0
+	if book.Rating == 0 {
+		rating = bookData.Rate
+	} else {
+		rating = (book.Rating + bookData.Rate) / 2
+	}
+	if err := services.DB.Where("id = ?", bookData.BookID).Find(&book).Update("rating", rating).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	if err := services.DB.Where("id = ?", id).Find(&user).Association("Rating").Append(&book); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
