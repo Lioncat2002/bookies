@@ -6,6 +6,7 @@ import (
 	"backend/services"
 	"backend/utils/token"
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -47,16 +48,22 @@ func RecommendBook(c *gin.Context) {
 	}
 	var tags []string
 	books := user.Owns
+	fmt.Println(books)
 	for _, book := range books {
 		tags = append(tags, book.Tag)
 	}
+	fmt.Println(tags)
 	book := []models.Book{}
-	if err := services.DB.Where("tag = ANY(?)", pq.Array(tags)).First(&book).Error; err != nil {
+	if err := services.DB.Where("tag = ANY(?)", pq.Array(tags)).Find(&book).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
+	c.JSON(http.StatusAccepted, gin.H{
+		"status": "success",
+		"data":   book,
+	})
 }
 
 func SearchBook(c *gin.Context) {
