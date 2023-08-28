@@ -23,7 +23,7 @@ type UserOwns struct {
 }
 
 // Define the User foreign key relationship for Cart
-type UserCart struct {
+type UserCarts struct {
 	UserID string `gorm:"primaryKey;autoIncrement:false"`
 	BookID string `gorm:"primaryKey;autoIncrement:false"`
 }

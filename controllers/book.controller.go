@@ -250,7 +250,13 @@ func AddBookUrl(c *gin.Context) {
 		return
 	}
 
-	id := c.Param("id")
+	id, err := token.ExtractID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	user := models.User{}
 	if err := services.DB.Where("id = ?", id).Find(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -271,6 +277,7 @@ func AddBookUrl(c *gin.Context) {
 		})
 		return
 	}
+	id = c.Param("id")
 	book := models.Book{}
 	if err := services.DB.Where("id = ?", id).Find(&book).Update("url", url).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

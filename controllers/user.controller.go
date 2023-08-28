@@ -56,7 +56,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 	user := models.User{}
-	if err := services.DB.Where("email = ?", data.Email).Preload("Author").Preload("Owns").Preload("Carts").First(&user).Error; err != nil {
+	if err := services.DB.Where("email = ?", data.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
