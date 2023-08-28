@@ -20,7 +20,6 @@ func RunRouter() {
 	})
 
 	UserRoute := router.Group("/api/user")
-	UserRoute.GET("/", controllers.AllUsers)
 	UserRoute.PUT("/", controllers.AddUser)
 	UserRoute.POST("/login", controllers.LoginUser)
 
