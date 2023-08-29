@@ -1,1 +1,3 @@
 DB_URI=your-postgres-link
+API_KEY="supersekret"
+TOKEN_LIFESPAN=1
