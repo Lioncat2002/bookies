@@ -9,9 +9,9 @@ type User struct {
 	Password string `gorm:"size:255;"`
 	Name     string `gorm:"size:255;"`
 	Author   []Book `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	Carts    []Book `gorm:"many2many:user_carts;joinForeignKey:UserID;joinReferences:BookID"`  //books in carts
-	Owns     []Book `gorm:"many2many:user_owns;joinForeignKey:UserID;joinReferences:BookID"`   //books in owns
-	Rating   []Book `gorm:"many2many:user_rating;joinForeignKey:UserID;joinReferences:BookID"` //books rated
+	Carts    []Book `gorm:"many2many:user_carts;joinReferences:BookID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`  //books in carts
+	Owns     []Book `gorm:"many2many:user_owns;joinReferences:BookID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`   //books in owns
+	Rating   []Book `gorm:"many2many:user_ratings;joinForeignKey:UserID;joinReferences:BookID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"` //books rated
 	Coins    float32
 	Role     string
 }
@@ -29,7 +29,7 @@ type UserCarts struct {
 }
 
 // Define the User foreign key relationship for book rating
-type UserRating struct {
+type UserRatings struct {
 	UserID string `gorm:"primaryKey;autoIncrement:false"`
 	BookID string `gorm:"primaryKey;autoIncrement:false"`
 }

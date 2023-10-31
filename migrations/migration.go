@@ -24,7 +24,12 @@ func main() {
 	db.Migrator().DropTable(&models.Book{})
 	db.Exec("DROP TABLE user_owns")
 	db.Exec("DROP TABLE user_carts")
-	db.AutoMigrate(&models.User{}, &models.UserCarts{}, &models.UserOwns{}, &models.UserRating{})
+	db.Exec("DROP TABLE user_ratings")
+	db.Exec("DROP TABLE user_rating")
+	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.UserCarts{})
+	db.AutoMigrate(&models.UserOwns{})
+	db.AutoMigrate(&models.UserRatings{})
 	db.AutoMigrate(&models.Book{})
 	log.Println("Successfully migrated")
 }

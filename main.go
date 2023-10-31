@@ -21,6 +21,7 @@ func RunRouter() {
 
 	UserRoute := router.Group("/api/user")
 	UserRoute.PUT("/", controllers.AddUser)
+	UserRoute.GET("/",controllers.AllUsers)
 	UserRoute.POST("/login", controllers.LoginUser)
 
 	UserRoute.Use(middlewares.JwtAuth())
