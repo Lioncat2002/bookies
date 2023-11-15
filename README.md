@@ -15,6 +15,3 @@ TOKEN_LIFESPAN=1
 
 ## Public deployment
 https://spobook.fly.dev/
-
-## ER Diagram:
-![er_diagram](https://github.com/BalkanID-University/vit-2025-summer-engineering-internship-task-Lioncat2002/assets/74904820/4c7f4364-d424-4764-b87c-9f51925bd1bd)
