@@ -1,4 +1,4 @@
-# Spobook
+# Bookies
 ## How to run:
 1. Install all dependencies with `go mod download`
 2. Create a .env file according to the .example-env
